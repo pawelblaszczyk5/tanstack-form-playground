@@ -41,53 +41,55 @@ export default function App() {
   return (
     <div>
       <h1>Simple Form Example</h1>
-      <form.Form>
-        <div>
-          <form.Field
-            name="firstName"
-            validate={(value) => !value && "A first name is required"}
-            validateAsync={async (value) => {
-              await new Promise((resolve) => setTimeout(resolve, 1000));
-              return (
-                value.includes("error") && 'No "error" allowed in first name'
-              );
-            }}
-            children={(field) => (
-              <>
-                <label htmlFor={field.name}>First Name:</label>
-                <input
-                  autoComplete="off"
-                  name={field.name}
-                  {...field.getInputProps({
-                    onBlur: () => console.log("Blur first name field"),
-                  })}
-                />
-                <FieldInfo field={field} />
-              </>
+      <form.Provider>
+        <form {...form.getFormProps()}>
+          <div>
+            <form.Field
+              name="firstName"
+              validate={(value) => !value && "A first name is required"}
+              validateAsync={async (value) => {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                return (
+                  value.includes("error") && 'No "error" allowed in first name'
+                );
+              }}
+              children={(field) => (
+                <>
+                  <label htmlFor={field.name}>First Name:</label>
+                  <input
+                    autoComplete="off"
+                    name={field.name}
+                    {...field.getInputProps({
+                      onBlur: () => console.log("Blur first name field"),
+                    })}
+                  />
+                  <FieldInfo field={field} />
+                </>
+              )}
+            />
+          </div>
+          <div>
+            <form.Field
+              name="lastName"
+              children={(field) => (
+                <>
+                  <label htmlFor={field.name}>Last Name:</label>
+                  <input name={field.name} {...field.getInputProps()} />
+                  <FieldInfo field={field} />
+                </>
+              )}
+            />
+          </div>
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+            children={([canSubmit, isSubmitting]) => (
+              <button onClick={() => form.validateAllFields()} type="submit">
+                {isSubmitting ? "..." : canSubmit ? "Save" : "Fix errors"}
+              </button>
             )}
           />
-        </div>
-        <div>
-          <form.Field
-            name="lastName"
-            children={(field) => (
-              <>
-                <label htmlFor={field.name}>Last Name:</label>
-                <input name={field.name} {...field.getInputProps()} />
-                <FieldInfo field={field} />
-              </>
-            )}
-          />
-        </div>
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <button onClick={() => form.validateAllFields()} type="submit">
-              {isSubmitting ? "..." : "Submit"}
-            </button>
-          )}
-        />
-      </form.Form>
+        </form>
+      </form.Provider>
     </div>
   );
 }
