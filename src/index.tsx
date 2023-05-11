@@ -1,17 +1,6 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
-import { FieldApi, useForm } from "@tanstack/react-form";
-
-type Person = {
-  firstName: string;
-  lastName: string;
-  hobbies: Hobby[];
-};
-
-type Hobby = {
-  name: string;
-  description: string;
-};
+import { FieldApi, createFormFactory, useForm } from "@tanstack/react-form";
 
 function FieldInfo({ field }: { field: FieldApi<any, any> }) {
   return (
@@ -30,11 +19,8 @@ export default function App() {
       firstName: "",
       lastName: "",
     },
-    onSubmit: async (values) => {
-      console.log(values);
-    },
-    onInvalidSubmit: () => {
-      console.log("Invalid submit");
+    onSubmit: async (values, formApi) => {
+      console.log(formApi.fieldInfo.firstName.instances);
     },
   });
 
@@ -46,7 +32,13 @@ export default function App() {
           <div>
             <form.Field
               name="firstName"
-              validate={(value) => !value && "A first name is required"}
+              validate={(value) =>
+                !value
+                  ? "A first name is required"
+                  : value.length < 3
+                  ? "First name must be at least 3 characters"
+                  : undefined
+              }
               validateAsync={async (value) => {
                 await new Promise((resolve) => setTimeout(resolve, 1000));
                 return (
@@ -55,14 +47,7 @@ export default function App() {
               }}
               children={(field) => (
                 <>
-                  <label htmlFor={field.name}>First Name:</label>
-                  <input
-                    autoComplete="off"
-                    name={field.name}
-                    {...field.getInputProps({
-                      onBlur: () => console.log("Blur first name field"),
-                    })}
-                  />
+                  <input {...field.getInputProps()} />
                   <FieldInfo field={field} />
                 </>
               )}
@@ -73,18 +58,17 @@ export default function App() {
               name="lastName"
               children={(field) => (
                 <>
-                  <label htmlFor={field.name}>Last Name:</label>
-                  <input name={field.name} {...field.getInputProps()} />
+                  <input {...field.getInputProps()} />
                   <FieldInfo field={field} />
                 </>
               )}
             />
           </div>
-          <form.Subscribe<[boolean, boolean]>
+          <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
             children={([canSubmit, isSubmitting]) => (
-              <button onClick={() => form.validateAllFields()} type="submit">
-                {isSubmitting ? "..." : canSubmit ? "Save" : "Fix errors"}
+              <button type="submit" disabled={!canSubmit}>
+                {isSubmitting ? "..." : "Submit"}
               </button>
             )}
           />
@@ -95,4 +79,5 @@ export default function App() {
 }
 
 const rootElement = document.getElementById("root")!;
+
 ReactDOM.createRoot(rootElement).render(<App />);
