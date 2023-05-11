@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { FieldApi, createFormFactory, useForm } from "@tanstack/react-form";
+import { FieldApi, useForm } from "@tanstack/react-form";
 
 type Person = {
   firstName: string;
@@ -80,8 +80,8 @@ export default function App() {
               )}
             />
           </div>
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+          <form.Subscribe<[boolean, boolean]>
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
             children={([canSubmit, isSubmitting]) => (
               <button onClick={() => form.validateAllFields()} type="submit">
                 {isSubmitting ? "..." : canSubmit ? "Save" : "Fix errors"}
